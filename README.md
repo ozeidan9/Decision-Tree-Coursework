@@ -24,4 +24,4 @@ Make sure that your code runs. If not, you will lose most of the code mark
 · The recall and precision per class: 2 · The F1-measures: 2
 ∗ Result analysis after pruning (5 lines max): 10 ∗ Depth analysis (5 lines max): 10
 • Report quality (total : 10)
-– Quality of presentation: 10
+– Quality of presentation: 10 
