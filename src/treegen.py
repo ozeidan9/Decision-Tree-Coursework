@@ -13,8 +13,8 @@ class tree_gen:
         clean_filepath = "test/clean_dataset.txt"
         noisy_filepath = "test/noisy_dataset.txt"
         
-        self.clean_data = np.loadtxt(clean_filepath, dtype=float, usecols=(1,2,3,4,5,6,7))
-        self.noisy_data = np.loadtxt(noisy_filepath, dtype=float, usecols=(1,2,3,4,5,6,7))
+        self.clean_data = np.loadtxt(clean_filepath, dtype=float)
+        self.noisy_data = np.loadtxt(noisy_filepath, dtype=float)
 
         self.depth = depth
 
@@ -50,31 +50,36 @@ class tree_gen:
         :return: best split
         """
         res = {'split': None, 'left': None, 'right': None}
-        best_split = None
-        best_entropy = np.inf
-        for col in range(training_dataset.shape[1]-1):
-            for row in range(training_dataset.shape[0]):
-                #Entropy is measure of how 'good' split is
-                #Split is which column to split at
-                #Split point is the boundry for decision (i.e if column 2 is less than 54, then go left)
-                entropy, split, splitpoint = self.compute_entropy(training_dataset, col, row)
-                if entropy is not None:
-                    if entropy < best_entropy:
-                        best_split = split
-                        best_entropy = entropy
-        
+        best_split = [None, None]
+        best_entropy = 0
+        #Calculate the maximum entropy for splitting 
+        for row in range(training_dataset.shape[0]):
+            #Calculate entropy for every column
+            for column in range(training_dataset.shape[1]-1):
+                #Split array into top and bottom, and add
+                topEntropy = self.compute_entropy(training_dataset[0:row, column])
+                bottomEntropy = self.compute_entropy(training_dataset[row:training_dataset.shape[0], column])
+                totalEntropy = bottomEntropy + topEntropy 
+                if totalEntropy < best_entropy:
+                    best_entropy = totalEntropy
+                    best_split = [row, column]
+        return best_split
         res['split'] = best_split
         return res
-        
         # return: {split: , left: , right: }
         
     
-    def compute_entropy(training_dataset, col, row):
+    def compute_entropy(training_dataset):
         """
         Calculate the best splitpoint in the given column
         """
-        #Want the split at the column with the largest sum
-        pass
+        entropy = 0
+        #Need elements as a histogram
+        elements, count = np.unique(training_dataset, return_counts=True)
+        for i in range(len(elements)):
+            elementProb = count[i]/len(count)
+            entropy -= elementProb * np.log2(elementProb)
+        return entropy
     
     def visualize_tree(self, tree) -> None:
         """
