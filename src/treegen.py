@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib as plt
+from collections import deque
 
 
 class tree:
@@ -8,13 +9,13 @@ class tree:
         self.node = {'attribute': attribute, 'val': val, 'left': left, 'right': right}   
 
 class tree_gen:
-    def __init__(self, filepath, depth=0) -> None:
+    def __init__(self, depth=0) -> None:
     
         clean_filepath = "test/clean_dataset.txt"
         noisy_filepath = "test/noisy_dataset.txt"
         
-        self.clean_data = np.loadtxt(clean_filepath, dtype=float, usecols=(1,2,3,4,5,6,7))
-        self.noisy_data = np.loadtxt(noisy_filepath, dtype=float, usecols=(1,2,3,4,5,6,7))
+        self.clean_data = np.loadtxt(clean_filepath, dtype=float)
+        self.noisy_data = np.loadtxt(noisy_filepath, dtype=float)
 
         self.depth = depth
 
@@ -49,42 +50,80 @@ class tree_gen:
         :param training_dataset: 2000x8 matrix of training data
         :return: best split
         """
-        res = {'split': None, 'left': None, 'right': None}
-        best_split = None
-        best_entropy = np.inf
-        for col in range(training_dataset.shape[1]-1):
-            for row in range(training_dataset.shape[0]):
-                #Entropy is measure of how 'good' split is
-                #Split is which column to split at
-                #Split point is the boundry for decision (i.e if column 2 is less than 54, then go left)
-                entropy, split, splitpoint = self.compute_entropy(training_dataset, col, row)
-                if entropy is not None:
-                    if entropy < best_entropy:
-                        best_split = split
-                        best_entropy = entropy
-        
-        res['split'] = best_split
-        return res
-        
-        # return: {split: , left: , right: }
+        best_split = [None, None]
+        best_entropy = 0
+        #Calculate the maximum entropy for splitting 
+        for row in range(training_dataset.shape[0]):
+            #Calculate entropy for every column
+            for column in range(training_dataset.shape[1]-1):
+                #Split array into top and bottom, and add
+                topEntropy = self.compute_entropy(training_dataset[0:row, column])
+                bottomEntropy = self.compute_entropy(training_dataset[row:training_dataset.shape[0], column])
+                totalEntropy = bottomEntropy + topEntropy 
+                if totalEntropy < best_entropy:
+                    best_entropy = totalEntropy
+                    best_split = [row, column]
+        return best_split
         
     
-    def compute_entropy(training_dataset, col, row):
+    def compute_entropy(training_dataset):
         """
         Calculate the best splitpoint in the given column
         """
-        #Want the split at the column with the largest sum
-        pass
+        entropy = 0
+        #Need elements as a histogram
+        elements, count = np.unique(training_dataset, return_counts=True)
+        for i in range(len(elements)):
+            elementProb = count[i]/len(count)
+            entropy -= elementProb * np.log2(elementProb)
+        return entropy
     
-    def visualize_tree(self, tree) -> None:
+    def visualize_tree(self, root, xmin, xmax, ymin, ymax) -> None:
         """
-        Visualize the given decision tree
+        Visualize the given decision tree using breadth first search to perfrom a level order traversal
         :param tree: decision tree
         :return: None
         """
-        
-        # Use matplotlib to plot tree
-        pass
-        
-# tree_gen = tree_gen()
-# print(tree_gen.clean_data)
+        queue = deque([(root, xmin, xmax, ymin, ymax)])
+        while len(queue) > 0:
+            e = queue.popleft()
+            node = e[0]
+            xmin = e[1]
+            xmax = e[2]
+            ymin = e[3]
+            ymax = e[4]
+            atri = node['atribute']
+            val = node['value']
+            text = '['+str(atri)+']:'+str(val)
+            #---------------------
+            center = xmin+(xmax-xmin)/2.0
+            d = (center-xmin)/2.0
+            
+        if node['left'] != None and node['right'] != None:
+            an1 = ax.annotate(node['leaf'], xy=(center, ymax), xycoords="data",
+            va="bottom", ha="center",
+            bbox=dict(boxstyle="round", fc="w"))
+            
+        elif node['l'] != None:
+            queue.append((node['l'], xmin, center, ymin, ymax-gap))
+            ax.annotate(text, xy=(center-d, ymax-gap), xytext=(center, ymax),
+                        arrowprops=dict(facecolor='grey', shrink=10),
+                        )
+            
+        elif node['r'] != None:
+            queue.append((node['r'], center, xmax, ymin, ymax-gap))
+            ax.annotate(text, xy=(center+d, ymax-gap), xytext=(center, ymax),
+                        arrowprops=dict(facecolor='grey', shrink=10),
+                        )            
+                
+                
+tree_gen = tree_gen()
+
+# Setps to visualise:
+root, depth = tree_gen.generate_decision_tree(tree_gen.clean_data, 0)
+fig, ax = plt.subplots(figsize=(18, 10))
+gap = 1.0/depth
+tree_gen.visualize_tree(root, 0.0, 1.0, 0.0, 1.0)
+fig.subplots_adjust(top=0.83)
+plt.show()
+
