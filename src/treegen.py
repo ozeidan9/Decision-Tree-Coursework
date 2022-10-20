@@ -8,7 +8,7 @@ class tree:
         self.node = {'attribute': attribute, 'val': val, 'left': left, 'right': right}   
 
 class tree_gen:
-    def __init__(self, filepath, depth=0) -> None:
+    def __init__(self, depth=0) -> None:
     
         clean_filepath = "test/clean_dataset.txt"
         noisy_filepath = "test/noisy_dataset.txt"
@@ -49,7 +49,6 @@ class tree_gen:
         :param training_dataset: 2000x8 matrix of training data
         :return: best split
         """
-        res = {'split': None, 'left': None, 'right': None}
         best_split = [None, None]
         best_entropy = 0
         #Calculate the maximum entropy for splitting 
@@ -64,9 +63,6 @@ class tree_gen:
                     best_entropy = totalEntropy
                     best_split = [row, column]
         return best_split
-        res['split'] = best_split
-        return res
-        # return: {split: , left: , right: }
         
     
     def compute_entropy(training_dataset):
@@ -81,15 +77,53 @@ class tree_gen:
             entropy -= elementProb * np.log2(elementProb)
         return entropy
     
-    def visualize_tree(self, tree) -> None:
+    def visualize_tree(self, root, xmin, xmax, ymin, ymax) -> None:
         """
-        Visualize the given decision tree
+        Visualize the given decision tree using breadth first search to perfrom a level order traversal
         :param tree: decision tree
         :return: None
         """
-        
-        # Use matplotlib to plot tree
-        pass
-        
-# tree_gen = tree_gen()
-# print(tree_gen.clean_data)
+        queue = deque([(root, xmin, xmax, ymin, ymax)])
+        while len(queue) > 0:
+            e = queue.popleft()
+            node = e[0]
+            xmin = e[1]
+            xmax = e[2]
+            ymin = e[3]
+            ymax = e[4]
+            atri = node['atribute']
+            val = node['value']
+            text = '['+str(atri)+']:'+str(val)
+            #---------------------
+            center = xmin+(xmax-xmin)/2.0
+            d = (center-xmin)/2.0
+            
+            if node['left'] != None and node['right'] != None:
+                an1 = ax.annotate(0, xy=(center, ymax), xycoords="data",
+                va="bottom", ha="center",
+                bbox=dict(boxstyle="round", fc="w"))
+                
+            elif node['left'] != None:
+                queue.append((node['left'], xmin, center, ymin, ymax-gap))
+                ax.annotate(text, xy=(center-d, ymax-gap), xytext=(center, ymax),
+                            arrowprops=dict(facecolor='grey', shrink=10),
+                            )
+                
+            elif node['right'] != None:
+                queue.append((node['right'], center, xmax, ymin, ymax-gap))
+                ax.annotate(text, xy=(center+d, ymax-gap), xytext=(center, ymax),
+                            arrowprops=dict(facecolor='grey', shrink=10),
+                            )            
+            else:
+                continue
+                
+tree_gen = tree_gen()
+
+# Setps to visualise:
+root, depth = tree_gen.generate_decision_tree(tree_gen.clean_data, 0)
+fig, ax = plt.subplots(figsize=(18, 10))
+gap = 1.0/depth
+tree_gen.visualize_tree(root, 0.0, 1.0, 0.0, 1.0)
+fig.subplots_adjust(top=0.83)
+plt.show()
+
