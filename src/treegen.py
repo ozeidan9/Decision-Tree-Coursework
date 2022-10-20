@@ -99,23 +99,24 @@ class tree_gen:
             center = xmin+(xmax-xmin)/2.0
             d = (center-xmin)/2.0
             
-        if node['left'] != None and node['right'] != None:
-            an1 = ax.annotate(node['leaf'], xy=(center, ymax), xycoords="data",
-            va="bottom", ha="center",
-            bbox=dict(boxstyle="round", fc="w"))
-            
-        elif node['l'] != None:
-            queue.append((node['l'], xmin, center, ymin, ymax-gap))
-            ax.annotate(text, xy=(center-d, ymax-gap), xytext=(center, ymax),
-                        arrowprops=dict(facecolor='grey', shrink=10),
-                        )
-            
-        elif node['r'] != None:
-            queue.append((node['r'], center, xmax, ymin, ymax-gap))
-            ax.annotate(text, xy=(center+d, ymax-gap), xytext=(center, ymax),
-                        arrowprops=dict(facecolor='grey', shrink=10),
-                        )            
+            if node['left'] != None and node['right'] != None:
+                an1 = ax.annotate(0, xy=(center, ymax), xycoords="data",
+                va="bottom", ha="center",
+                bbox=dict(boxstyle="round", fc="w"))
                 
+            elif node['left'] != None:
+                queue.append((node['left'], xmin, center, ymin, ymax-gap))
+                ax.annotate(text, xy=(center-d, ymax-gap), xytext=(center, ymax),
+                            arrowprops=dict(facecolor='grey', shrink=10),
+                            )
+                
+            elif node['right'] != None:
+                queue.append((node['right'], center, xmax, ymin, ymax-gap))
+                ax.annotate(text, xy=(center+d, ymax-gap), xytext=(center, ymax),
+                            arrowprops=dict(facecolor='grey', shrink=10),
+                            )            
+            else:
+                continue
                 
 tree_gen = tree_gen()
 
