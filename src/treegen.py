@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib as plt
-
+from collections import deque
 
 class tree:
     def __init__(self, attribute, val=0, left=None, right=None):
@@ -9,16 +9,17 @@ class tree:
 
 class tree_gen:
     def __init__(self, depth=0) -> None:
-    
-        clean_filepath = "test/clean_dataset.txt"
-        noisy_filepath = "test/noisy_dataset.txt"
+        clean_filepath = "src/test/clean_dataset.txt"
+        noisy_filepath = "src/test/noisy_dataset.txt"
+        sample_filepath = "src/test/sample_set.txt"
         
         self.clean_data = np.loadtxt(clean_filepath, dtype=float)
         self.noisy_data = np.loadtxt(noisy_filepath, dtype=float)
-
+        self.sample_data = np.loadtxt(sample_filepath, dtype=float)
         self.depth = depth
 
     def generate_decision_tree(self, training_dataset, depth):
+        # Current issue: tree keeps going, depth has reached 700 before.
         """
         Generate a decision tree from the given data
         :param training_dataset: 2000x8 matrix of training data
@@ -26,14 +27,16 @@ class tree_gen:
         :return: decision tree
         """
         # if all samples have same label, return a leaf node with this value and depth
+        # ie if all the remaining samples are of the same sample (your dataset correspondes to only one room)
         if len(np.unique(training_dataset[:, -1])) == 1:
+            print("tree finished")
             attribute = np.unique(training_dataset[:,7])
             leaf_node = tree(attribute=int(attribute))
             return (leaf_node, depth)
         
         # else, find the best split and return a node with the best split and depth
         else:
-            attribute, value = self.find_split(training_dataset)
+            value, attribute = self.find_split(training_dataset)
             l =np.where(training_dataset[:, attribute-1] <= value)
             r =np.where(training_dataset[:, attribute-1] > value)
             left_dataset = training_dataset[l]
@@ -47,25 +50,26 @@ class tree_gen:
         """
         Find the best split for the given data
         :param training_dataset: 2000x8 matrix of training data
-        :return: best split
+        :return: best split - row and column
         """
         best_split = [None, None]
-        best_entropy = 0
+        best_entropy = np.inf
         #Calculate the maximum entropy for splitting 
         for row in range(training_dataset.shape[0]):
             #Calculate entropy for every column
             for column in range(training_dataset.shape[1]-1):
-                #Split array into top and bottom, and add
+                #Split array into top and bottom, and add entropies
                 topEntropy = self.compute_entropy(training_dataset[0:row, column])
                 bottomEntropy = self.compute_entropy(training_dataset[row:training_dataset.shape[0], column])
                 totalEntropy = bottomEntropy + topEntropy 
+                #print(totalEntropy)
                 if totalEntropy < best_entropy:
                     best_entropy = totalEntropy
-                    best_split = [row, column]
-        return best_split
-        
+                    best_split = [training_dataset[row][column], column]
+        #print("BE:", best_entropy)
+        return best_split[0], best_split[1]
     
-    def compute_entropy(training_dataset):
+    def compute_entropy(self, training_dataset):
         """
         Calculate the best splitpoint in the given column
         """
@@ -73,9 +77,9 @@ class tree_gen:
         #Need elements as a histogram
         elements, count = np.unique(training_dataset, return_counts=True)
         for i in range(len(elements)):
-            elementProb = count[i]/len(count)
+            elementProb = count[i]/sum(count)
             entropy -= elementProb * np.log2(elementProb)
-        return entropy
+        return entropy * training_dataset.size
     
     def visualize_tree(self, root, xmin, xmax, ymin, ymax) -> None:
         """
@@ -116,14 +120,14 @@ class tree_gen:
                             )            
             else:
                 continue
-                
-tree_gen = tree_gen()
 
-# Setps to visualise:
-root, depth = tree_gen.generate_decision_tree(tree_gen.clean_data, 0)
-fig, ax = plt.subplots(figsize=(18, 10))
-gap = 1.0/depth
-tree_gen.visualize_tree(root, 0.0, 1.0, 0.0, 1.0)
-fig.subplots_adjust(top=0.83)
-plt.show()
+if __name__ == "__main__":
+    treeNode = tree_gen()
+    # Steps to visualise:
+    root, depth = treeNode.generate_decision_tree(treeNode.sample_data, 0)
+    #fig, ax = plt.subplots(figsize=(18, 10))
+    #gap = 1.0/depth
+    #treeNode.visualize_tree(root, 0.0, 1.0, 0.0, 1.0)
+    #fig.subplots_adjust(top=0.83)
+    #plt.show()
 
