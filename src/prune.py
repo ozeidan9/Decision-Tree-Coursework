@@ -12,4 +12,5 @@ def pruning (tree,root):
     left = pruning(tree["left"],root)
     right = pruning(tree["right"],root)
 
-    
+#Hello Indraneel, you're in charge of this now good luck :)  
+#put this function inside the tree class so u can pass the decision tree straight into here
