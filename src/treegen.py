@@ -4,20 +4,18 @@ import matplotlib.axes as ax
 from collections import deque
 
 class tree:
-    def __init__(self, attribute, val=0, left=None, right=None):
+    def __init__(self, attribute, val=None, left=None, right=None):
         # Creates leaf node by default
         self.node = {'attribute': attribute, 'val': val, 'left': left, 'right': right}   
     def printTree(self, node=None, depth=0):
         if node is None:
             node = self.node
-        if node['left'] is not None:
+        if node['val'] is not None:
             self.printTree(node['left'].node, depth + 1)
-        if node['val'] != 0:
             print(' ' * 4 * depth + '-> x' + str(node['attribute']) + ' <= ' + str(node['val']))
+            self.printTree(node['right'].node, depth + 1)
         else:
             print(' ' * 4 * depth + '-> x' + str(node['attribute']))
-        if node['right'] is not None:
-            self.printTree(node['right'].node, depth + 1)
         if depth == 0:
             print("up means true, down means false")
 
