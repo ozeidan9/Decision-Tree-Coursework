@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib as plt
 import matplotlib.axes as ax
 from collections import deque
+from evaluation import Evaluation
 
 class tree:
     def __init__(self, attribute, val=None, left=None, right=None):
@@ -139,16 +140,21 @@ def visualize_tree(root, xmin, xmax, ymin, ymax) -> None:
         else:
             continue
 
-# if __name__ == "__main__":
-#     treeNode = tree_gen()
+if __name__ == "__main__":
+
+    treeNode = tree_gen()
 #     # Steps to visualise:
-#     root, depth = treeNode.generateTree(treeNode.sample_data, 0)
+    root, depth = treeNode.generateTree(treeNode.sample_data, 0)
 #     #fig, ax = plt.subplots(figsize=(18, 10))
 #     #gap = 1.0/depth
 #     #treeNode.visualize_tree(root, 0.0, 1.0, 0.0, 1.0)
 #     #fig.subplots_adjust(top=0.83)
 #     #plt.show()
-#     cross_eval = eval()
-#     print(cross_eval.eval_tree(root))
+
+    clean = "test/clean_dataset.txt"
+    noisy = "test/noisy_dataset.txt"
+    sample = "test/sample_set.txt"
+    cross_eval = Evaluation((np.loadtxt(noisy, dtype=float)),root)
+    #print(cross_eval.eval_tree(root),)
 
 
