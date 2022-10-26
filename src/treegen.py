@@ -1,7 +1,5 @@
 import numpy as np
-import matplotlib as plt
-import matplotlib.axes as ax
-from collections import deque
+import matplotlib.pyplot as plt
 
 class tree:
     def __init__(self, attribute, val=None, left=None, right=None):
@@ -21,7 +19,7 @@ class tree:
             print("up means true, down means false")
 
 class tree_gen:
-    def __init__(self, depth=0) -> None:
+    def __init__(self, depth=0):
         clean_filepath = "test/clean_dataset.txt"
         noisy_filepath = "test/noisy_dataset.txt"
         sample_filepath = "test/sample_set.txt"
@@ -98,57 +96,65 @@ class tree_gen:
             entropy -= elementProb * np.log2(elementProb)
         return entropy * training_dataset.size
     
-def visualize_tree(root, xmin, xmax, ymin, ymax) -> None:
-    """
-    Visualize the given decision tree using breadth first search to perfrom a level order traversal
-    :param tree: decision tree
-    :return: None
-    """
-    queue = deque([(root, xmin, xmax, ymin, ymax)])
-    while len(queue) > 0:
-        e = queue.popleft()
-        node = e[0]
-        xmin = e[1]
-        xmax = e[2]
-        ymin = e[3]
-        ymax = e[4]
-        node = root.node
-        atri = node['attribute']
-        val = node['val']
-        text = '['+str(atri)+']:'+str(val)
-        #---------------------
-        center = xmin+(xmax-xmin)/2.0
-        d = (center-xmin)/2.0
-        
-        if node['left'] != None and node['right'] != None:
-            an1 = ax.Axes.annotate(0, xy=(center, ymax), xycoords="data",
-            va="bottom", ha="center",
-            bbox=dict(boxstyle="round", fc="w"))
-            
-        elif node['left'] != None:
-            queue.append((node['left'], xmin, center, ymin, ymax-gap))
-            ax.Axes.annotate(text, xy=(center-d, ymax-gap), xytext=(center, ymax),
-                        arrowprops=dict(facecolor='grey', shrink=10),
-                        )
-            
-        elif node['right'] != None:
-            queue.append((node['right'], center, xmax, ymin, ymax-gap))
-            ax.Axes.annotate(text, xy=(center+d, ymax-gap), xytext=(center, ymax),
-                        arrowprops=dict(facecolor='grey', shrink=10),
-                        )            
-        else:
-            continue
+    def visualize_tree(self, root, maxdepth, file):
+        """ Visualize the decision tree using matplotlib and a recurisive dfs function and save it to a file
 
-# if __name__ == "__main__":
-#     treeNode = tree_gen()
-#     # Steps to visualise:
-#     root, depth = treeNode.generateTree(treeNode.sample_data, 0)
-#     #fig, ax = plt.subplots(figsize=(18, 10))
-#     #gap = 1.0/depth
-#     #treeNode.visualize_tree(root, 0.0, 1.0, 0.0, 1.0)
-#     #fig.subplots_adjust(top=0.83)
-#     #plt.show()
-#     cross_eval = eval()
-#     print(cross_eval.eval_tree(root))
+        :param root: the root node of the tree
+        :param maxdepth: the maximum depth of the tree
+        :param file: the file name to save the tree figure to
+        :return: None
+        """
+        plt.figure(figsize=(min(2**maxdepth, 2**5), maxdepth), dpi=80)  # intialize matplotlib figure
+       
+        def dfs_tree_plotter(root, x, y, depth):
+            """
+            Visualize the given decision tree by performing deapth first search and using matplotlib
+            :param tree: current tree node
+            :param x: x coordinate of current node
+            :param y: y coordinate of each level
+            :depth: current depth of tree
+            :return: None
+            """
+            if not root.node['left'] and not root.node['right']: 
+                # leaf node:
+                plt.text(x, y, str(root.node['attribute']), size='smaller', rotation=0, ha="center", va="center",
+                        bbox=dict(boxstyle="round", ec=(0., 0., 0.), fc=(1., 1., 1.)))
+                return
+            
+            # at least one child node:
+            plt.text(x, y, str("x" + str(root.node['attribute'])) + " <= " + str(root.node['val']), size='smaller', rotation=0,
+                    ha="center", va="center", bbox=dict(boxstyle="round", ec=(0., 0., 0.), fc=(1., 1., 1.)))
+            
+            # dy: proportional to 1/(2^depth), since  every level has a max of 2**depth nodes. 
+            # dx: divided into 2^depth parts
+            xleft = x - 2/(2**depth)
+            xright = x + 2/(2**depth)
+            ychild = y - 5  # equal heigh for child nodes
+            
+            # plot left and right edges using the same color
+            x_val = [xleft, x, xright]
+            y_val = [ychild, y, ychild]
+            plt.plot(x_val, y_val)
+            
+            dfs_tree_plotter(root.node['left'], xleft, ychild, depth+1)     # left child recurisve call
+            dfs_tree_plotter(root.node['right'], xright, ychild, depth+1)   # right child recursive call
+            return
+        
+        dfs_tree_plotter(root, x=0, y=50, depth=0)
+        plt.axis('off') # Remove axes from plot
+        plt.savefig(file) 
+        plt.close()
+        return
+    
+
+if __name__ == "__main__":
+    treeNode = tree_gen()
+    # Steps to visualise:
+    # Train  tree on the clean dataset and plot tree
+    root, depth = treeNode.generateTree(treeNode.sample_data, depth=0)
+    treeNode.visualize_tree(root, depth, "sample_data.png") # CHANGE TO CLEAN_DATA LATER
+    
+    # cross_eval = eval()
+    # print(cross_eval.eval_tree(root))
 
 
