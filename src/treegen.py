@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from evaluation import Evaluation
 
 class tree:
     def __init__(self, attribute, val=None, left=None, right=None):
@@ -154,7 +155,13 @@ if __name__ == "__main__":
     root, depth = treeNode.generateTree(treeNode.sample_data, depth=0)
     treeNode.visualize_tree(root, depth, "sample_data.png") # CHANGE TO CLEAN_DATA LATER
     
+    
     # cross_eval = eval()
     # print(cross_eval.eval_tree(root))
 
+    clean = "test/clean_dataset.txt"
+    noisy = "test/noisy_dataset.txt"
+    sample = "test/sample_set.txt"
+    cross_eval = Evaluation((np.loadtxt(noisy, dtype=float)),root)
+    #print(cross_eval.eval_tree(root))
 
