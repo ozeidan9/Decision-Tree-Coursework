@@ -1,15 +1,15 @@
 import numpy as np
 
 class Evaluation:
-    def __init__(self,data,root):
-        self.root = root
+    def __init__(self,data):
+        self.rooms_actual = {1:0,2:0,3:0,4:0}
+        self.rooms_predicted = {1:0,2:0,3:0,4:0}
+        self.root = None
         self.data = data
         self.test_set ={}
         self.training_set = {}
         #self.filter() #not need to remove answer from array right now
-        self.randomise()
-        self.cross_val()
-        print("Accuracy: ",self.evaluate())
+        
         #print(self.data)
         # for i in range(10):
         #     print("TEST SET: ")
@@ -20,8 +20,8 @@ class Evaluation:
     def randomise(self): #randomises the input data
         np.random.shuffle(self.data)
 
-    def filter(self):
-        self.data = np.delete(self.data,7,axis = 1) #deletes the room number (final column) from the data
+    #def filter(self):
+        #self.data = np.delete(self.data,7,axis = 1) #deletes the room number (final column) from the data
 
     def cross_val(self,k=10): #k-fold cross validation
 
@@ -30,14 +30,17 @@ class Evaluation:
             self.test_set[i] = self.data[i*split:(i*split)+split]
             self.training_set[i] = np.delete(self.data,slice(i*split,(i*split)+split),axis = 0)
 
-    def evaluate(self):
+    def evaluate(self,test_set_index):
         correct = 0
         total = 0
-        for k in range(10): #nested loop through each test row in each test set of size k=10
-            for row in self.test_set[k]:
-                total+=1
-                if self.eval_tree(self.root,row) == row[-1]:
-                    correct+=1
+        #for k in range(10): #nested loop through each test row in each test set of size k=10
+        for row in self.test_set[test_set_index]:
+            total+=1
+            self.rooms_actual[row[-1]]+=1 # for confusion matrix
+            prediction = self.eval_tree(self.root,row)
+            self.rooms_predicted[prediction]+=1
+            if prediction == row[-1]:
+                correct+=1
         return (correct/total)            
 
 

@@ -31,6 +31,7 @@ class tree_gen:
         self.depth = depth
 
     def generateTree(self, training_dataset, depth):
+        
         # Current issue: tree keeps going, depth has reached 700 before.
         """
         Generate a decision tree from the given data
@@ -41,7 +42,7 @@ class tree_gen:
         # if all samples have same label, return a leaf node with this value and depth
         # ie if all the remaining samples are of the same sample (your dataset correspondes to only one room)
         if len(np.unique(training_dataset[:, -1])) <= 1:
-            print("tree finished")
+            #print("tree finished")
             attribute = np.unique(training_dataset[:, -1])
             leaf_node = tree(attribute=int(attribute))
             return (leaf_node, depth)
@@ -152,7 +153,18 @@ if __name__ == "__main__":
     treeNode = tree_gen()
     # Steps to visualise:
     # Train  tree on the clean dataset and plot tree
-    root, depth = treeNode.generateTree(treeNode.sample_data, depth=0)
+    cross_eval = Evaluation(treeNode.clean_data)
+    cross_eval.randomise()
+    cross_eval.cross_val()
+    #print("THIS MIGHT TAKE A WHILE...")
+    print("CLEAN DATA : ")
+    for set_index in range(10):
+        print("Generating Tree... ")
+        root, depth = treeNode.generateTree(cross_eval.training_set[set_index], depth=0)
+        cross_eval.root = root
+        print("Accuracy: ",cross_eval.evaluate(set_index))
+        print("ACTUAL: ",cross_eval.rooms_actual)
+        print("PREDICTED: ", cross_eval.rooms_predicted)
     treeNode.visualize_tree(root, depth, "sample_data.png") # CHANGE TO CLEAN_DATA LATER
     
     
@@ -162,6 +174,6 @@ if __name__ == "__main__":
     clean = "test/clean_dataset.txt"
     noisy = "test/noisy_dataset.txt"
     sample = "test/sample_set.txt"
-    cross_eval = Evaluation((np.loadtxt(noisy, dtype=float)),root)
+    
     #print(cross_eval.eval_tree(root))
 
