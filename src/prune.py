@@ -1,16 +1,29 @@
 #Recursively traverses the tree and prunes it by evaluating the accuracy
-def pruning (tree,root):
+from attr import attributes
+from idna import valid_contextj
 
-    #returns tree if either the tree is Null or both leaf nodes are Null
-    if not tree or (not tree["right"] and not tree["left"]):
-        return tree
-    
 
-    right_copy = tree["right"]
-    left_copy = tree["left"]
+def pruning (head, root):
 
-    left = pruning(tree["left"],root)
-    right = pruning(tree["right"],root)
+    # Split the dataset according the tree attributes and values
+    # Classify the majority element in such a dataset split
 
-#Hello Indraneel, you're in charge of this now good luck :)  
-#put this function inside the tree class so u can pass the decision tree straight into here
+    # Recurse along with smaller training data until till leafs are found
+
+    # Prune if validation is greater than based on a validation evaluation function 
+    # Replace pruned node with majority class label
+
+
+    #evaluation_du.accuracy_validation(root)
+
+    if(nodeleft.val == none && noderight.val == none){
+        temp left = dict(node[left])
+        temp right = dict(node[right])
+
+        node.attribute = nodeleft
+        if(val(head) < unpruned)
+    }
+
+
+
+
