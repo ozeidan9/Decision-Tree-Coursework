@@ -22,7 +22,7 @@ def pruning(head, root, depth):
     left = pruning(head, root["left"], depth)
     right = pruning(head, root["right"], depth)
 
-    bool is_pruned = False
+    is_pruned = False;
 
     if(root["left"]["left"] == None and root["left"]["right"] == None and root["right"]["left"] == None and root["right"]["right"] == None ):
         
