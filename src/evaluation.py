@@ -8,20 +8,10 @@ class Evaluation:
         self.data = data
         self.test_set ={}
         self.training_set = {}
-        #self.filter() #not need to remove answer from array right now
-        
-        #print(self.data)
-        # for i in range(10):
-        #     print("TEST SET: ")
-        #     print(self.test_set[i])
-        #     print("TRAING SET: ")
-        #     print(self.training_set[i])
+
         
     def randomise(self): #randomises the input data
         np.random.shuffle(self.data)
-
-    #def filter(self):
-        #self.data = np.delete(self.data,7,axis = 1) #deletes the room number (final column) from the data
 
     def cross_val(self,k=10): #k-fold cross validation
 
@@ -30,11 +20,11 @@ class Evaluation:
             self.test_set[i] = self.data[i*split:(i*split)+split]
             self.training_set[i] = np.delete(self.data,slice(i*split,(i*split)+split),axis = 0)
 
-    def evaluate(self,test_set_index):
+    def evaluate(self,test_set_index=0):
         correct = 0
         total = 0
-        #for k in range(10): #nested loop through each test row in each test set of size k=10
-        for row in self.test_set[test_set_index]:
+
+        for row in self.test_set[test_set_index]: #loops through each test case
             total+=1
             self.rooms_actual[row[-1]]+=1 # for confusion matrix
             prediction = self.eval_tree(self.root,row)

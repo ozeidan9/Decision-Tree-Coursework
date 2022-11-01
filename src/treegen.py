@@ -153,27 +153,17 @@ if __name__ == "__main__":
     treeNode = tree_gen()
     # Steps to visualise:
     # Train  tree on the clean dataset and plot tree
-    cross_eval = Evaluation(treeNode.clean_data)
+    data = treeNode.clean_data
+    cross_eval = Evaluation(data)
     cross_eval.randomise()
-    cross_eval.cross_val()
-    #print("THIS MIGHT TAKE A WHILE...")
+    cross_eval.cross_val() # assigns training and test sets in 10-fold cross validation
+
     print("CLEAN DATA : ")
-    for set_index in range(10):
+    for index in range(10): # performs cross evaluation of 10 training and testing sets
         print("Generating Tree... ")
-        root, depth = treeNode.generateTree(cross_eval.training_set[set_index], depth=0)
+        root, depth = treeNode.generateTree(cross_eval.training_set[index], depth=0)
         cross_eval.root = root
-        print("Accuracy: ",cross_eval.evaluate(set_index))
+        print("Accuracy: ",cross_eval.evaluate(index))
         print("ACTUAL: ",cross_eval.rooms_actual)
         print("PREDICTED: ", cross_eval.rooms_predicted)
-    treeNode.visualize_tree(root, depth, "sample_data.png") # CHANGE TO CLEAN_DATA LATER
-    
-    
-    # cross_eval = eval()
-    # print(cross_eval.eval_tree(root))
-
-    clean = "test/clean_dataset.txt"
-    noisy = "test/noisy_dataset.txt"
-    sample = "test/sample_set.txt"
-    
-    #print(cross_eval.eval_tree(root))
-
+    treeNode.visualize_tree(root, depth, "tree_diagram.png") # CHANGE TO CLEAN_DATA LATER
