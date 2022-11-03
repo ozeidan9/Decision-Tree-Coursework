@@ -157,13 +157,27 @@ if __name__ == "__main__":
     cross_eval = Evaluation(data)
     cross_eval.randomise()
     cross_eval.cross_val() # assigns training and test sets in 10-fold cross validation
-
+    avg_precision = {1:0,2:0,3:0,4:0}
+    avg_recall = {1:0,2:0,3:0,4:0}
+    avg_f1 ={1:0,2:0,3:0,4:0}
     print("CLEAN DATA : ")
     for index in range(10): # performs cross evaluation of 10 training and testing sets
         print("Generating Tree... ")
         root, depth = treeNode.generateTree(cross_eval.training_set[index], depth=0)
         cross_eval.root = root
         print("Accuracy: ",cross_eval.evaluate(index))
-        print("ACTUAL: ",cross_eval.rooms_actual)
-        print("PREDICTED: ", cross_eval.rooms_predicted)
+        cross_eval.get_metrics()
+        print("Precision: {} Recall: {} F1: {}".format(cross_eval.precision,cross_eval.recall,cross_eval.f1))
+        for i in range(1,5):
+            avg_precision[i]+=cross_eval.precision[i]
+            avg_recall[i]+=cross_eval.recall[i]
+            avg_f1[i] += cross_eval.f1[i]
+
+    print("Averages: ")
+    print("Precision: ", avg_precision)
+    print("Recall: ",avg_recall)
+    print("F1: ", avg_f1)
+        
+        #print("ACTUAL: ",cross_eval.rooms_actual)
+        
     treeNode.visualize_tree(root, depth, "tree_diagram.png") # CHANGE TO CLEAN_DATA LATER

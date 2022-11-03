@@ -2,13 +2,24 @@ import numpy as np
 
 class Evaluation:
     def __init__(self,data):
-        self.rooms_actual = {1:0,2:0,3:0,4:0}
-        self.rooms_predicted = {1:0,2:0,3:0,4:0}
         self.root = None
         self.data = data
         self.test_set ={}
         self.training_set = {}
 
+        #for metrics
+        self.rooms_actual = {1:0,2:0,3:0,4:0}
+        self.true_positives = {1:0,2:0,3:0,4:0}
+        self.false_positives = {1:0,2:0,3:0,4:0}
+        self.precision = {1:0,2:0,3:0,4:0}
+        self.recall = {1:0,2:0,3:0,4:0}
+        self.f1 ={1:0,2:0,3:0,4:0}
+
+    def get_metrics(self):
+        for room in range(1,5):
+            self.precision[room] = self.true_positives[room]/(self.true_positives[room]+self.false_positives[room])
+            self.recall[room] = self.true_positives[room]/self.rooms_actual[room]
+            self.f1[room] = (2*self.precision[room]*self.recall[room])/(self.precision[room]+self.recall[room])
         
     def randomise(self): #randomises the input data
         np.random.shuffle(self.data)
@@ -23,14 +34,15 @@ class Evaluation:
     def evaluate(self,test_set_index=0):
         correct = 0
         total = 0
-
         for row in self.test_set[test_set_index]: #loops through each test case
             total+=1
-            self.rooms_actual[row[-1]]+=1 # for confusion matrix
+            self.rooms_actual[row[-1]]+=1 # for metrics
             prediction = self.eval_tree(self.root,row)
-            self.rooms_predicted[prediction]+=1
             if prediction == row[-1]:
                 correct+=1
+                self.true_positives[prediction]+=1
+            else:
+                self.false_positives[prediction]+=1
         return (correct/total)            
 
 
