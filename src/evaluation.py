@@ -1,10 +1,4 @@
 import numpy as np
-# self.rooms_actual = {1:0,2:0,3:0,4:0}
-# self.rooms_predicted = {1:0,2:0,3:0,4:0}
-# self.root = None
-# self.data = data
-# self.test_set ={}
-# self.training_set = {}
 
 
 def cross_val(data,k=10): #k-fold cross validation
@@ -16,19 +10,31 @@ def cross_val(data,k=10): #k-fold cross validation
         training_set[i] = np.delete(data,slice(i*split,(i*split)+split),axis = 0)
     return test_set,training_set
 
-def evaluate(root,test_set,test_set_index=0):
+def evaluate(root,test_set,is_pruning = 1):
+
+    rooms_actual = {1:0,2:0,3:0,4:0}
+    true_positives = {1:0,2:0,3:0,4:0}
+    false_positives = {1:0,2:0,3:0,4:0}
+
+
     correct = 0
     total = 0
-    rooms_actual, rooms_predicted = {1: 0, 2:0, 3:0, 4:0}, {1: 0, 2:0, 3:0, 4:0}
 
-    for row in test_set[test_set_index]: #loops through each test case
+    for row in test_set:#[test_set_index]: #loops through each test case
         total+=1
         rooms_actual[row[-1]]+=1 # for confusion matrix
         prediction = eval_tree(root,row)
-        rooms_predicted[prediction]+=1
         if prediction == row[-1]:
             correct+=1
-    return (correct/total)            
+            true_positives[prediction]+=1
+        else:
+            false_positives[prediction]+=1
+    print()
+    accuracy = correct/total
+    if is_pruning ==1:
+        return accuracy #just returns accuracy if this function is used by pruning
+    else:
+        return accuracy,rooms_actual,true_positives,false_positives          
     
 
 def eval_tree(root, input):
@@ -45,4 +51,15 @@ def eval_tree(root, input):
     if input[attr] <= root.node['val']:
         return eval_tree(root.node['left'], input)
     else:    
-        return eval_tree(root.node['right'], input)    
+        return eval_tree(root.node['right'], input)   
+
+def get_metrics(rooms_actual,true_positives,false_positives):
+    precision = {1:0,2:0,3:0,4:0}
+    recall = {1:0,2:0,3:0,4:0}
+    f1 ={1:0,2:0,3:0,4:0}
+    for room in range(1,5):
+        precision[room] = true_positives[room]/(true_positives[room]+false_positives[room])
+        recall[room] = true_positives[room]/rooms_actual[room]
+        f1[room] = (2*precision[room]*recall[room])/(precision[room]+recall[room])
+
+    return ((precision,recall,f1))  
