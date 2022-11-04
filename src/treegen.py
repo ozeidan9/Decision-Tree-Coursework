@@ -1,13 +1,14 @@
 from turtle import color
 import numpy as np
 import matplotlib.pyplot as plt
-from evaluation import Evaluation
+import matplotlib.axes as ax
 
-class tree:
+class treeNode:
     def __init__(self, attribute, val=None, left=None, right=None):
-        # Creates leaf node by default
+        #Node attributes
         self.node = {'attribute': attribute, 'val': val, 'left': left, 'right': right} 
-          
+
+    #For debugging purposes
     def printTree(self, node=None, depth=0):
         if node is None:
             node = self.node
@@ -19,96 +20,15 @@ class tree:
             print(' ' * 4 * depth + '-> x' + str(node['attribute']))
         if depth == 0:
             print("up means true, down means false")
-
-class tree_gen:
-    def __init__(self, depth=0):
-        clean_filepath = "test/clean_dataset.txt"
-        noisy_filepath = "test/noisy_dataset.txt"
-        sample_filepath = "test/sample_set.txt"
         
-        self.clean_data = np.loadtxt(clean_filepath, dtype=float)
-        self.noisy_data = np.loadtxt(noisy_filepath, dtype=float)
-        self.sample_data = np.loadtxt(sample_filepath, dtype=float)
-        self.depth = depth
-
-    def generateTree(self, training_dataset, depth):
-        
-        # Current issue: tree keeps going, depth has reached 700 before.
+    def visualizeTree(self, maxdepth, file, displayTree=False):
         """
-        Generate a decision tree from the given data
-        :param training_dataset: 2000x8 matrix of training data
-        :param depth: used to compute maximal depth of tree - for plotting purposes
-        :return: decision tree
-        """
-        # if all samples have same label, return a leaf node with this value and depth
-        # ie if all the remaining samples are of the same sample (your dataset correspondes to only one room)
-        if len(np.unique(training_dataset[:, -1])) <= 1:
-            #print("tree finished")
-            attribute = np.unique(training_dataset[:, -1])
-            leaf_node = tree(attribute=int(attribute))
-            return (leaf_node, depth)
-        
-        # else, find the best split and return a node with the best split and depth
-        else:
-            topSet, bottomSet, splitAttrib, value = self.splitSet(training_dataset)
-            leftBranch, leftDepth = self.generateTree(topSet, depth+1)
-            rightBranch, rightDepth = self.generateTree(bottomSet, depth+1)
-            node = tree(attribute=splitAttrib, val=value, left=leftBranch, right=rightBranch)
-            return (node, max(leftDepth, rightDepth))
-    
-    #def splitSet(self, trainingSet, value, attribute):
-    #    return trainingSet[np.where(trainingSet[:, attribute+1] <= value)], trainingSet[p.where(trainingSet[:, attribute+1] > value)]
-            
-    def splitSet(self, trainingSet):
-        """
-        Find the best split for the given data
-        :param training_dataset: 2000x8 matrix of training data
-        :return: best split - row and column
-        """
-        bestSplit = (None, None, 0, 0)
-        bestEntropy = np.inf
-        #Calculate the maximum entropy for splitting 
-        for row in range(trainingSet.shape[0]):
-            #Calculate entropy for every column, but ignore last column
-            for column in range(trainingSet.shape[1]-1):
-                #Split array into top and bottom, and add entropies
-                #topEntropy = self.compute_entropy(training_dataset[0:row, column])
-                #bottomEntropy = self.compute_entropy(training_dataset[row:training_dataset.shape[0], column])
-                value = trainingSet[row, column]
-                topSet = trainingSet[np.where(trainingSet[:, column] <= value)]
-                bottomSet = trainingSet[np.where(trainingSet[:, column] > value)]
-                topEntropy = self.compute_entropy(topSet)
-                bottomEntropy = self.compute_entropy(bottomSet)
-                totalEntropy = bottomEntropy + topEntropy 
-                #print(totalEntropy)
-                if totalEntropy < bestEntropy:
-                    bestEntropy = totalEntropy
-                    bestSplit = (topSet, bottomSet, column, value)
-        #print("BE:", best_entropy)
-        return bestSplit
-    
-    def compute_entropy(self, training_dataset):
-        """
-        Calculate the best splitpoint in the given column
-        """
-        entropy = 0
-        #Need elements as a histogram
-        elements, count = np.unique(training_dataset, return_counts=True)
-        for i in range(len(elements)):
-            elementProb = count[i]/sum(count)
-            entropy -= elementProb * np.log2(elementProb)
-        return entropy * training_dataset.size
-    
-    def visualize_tree(self, root, maxdepth, file):
-        """ Visualize the decision tree using matplotlib and a recurisive dfs function and save it to a file
-
+        Visualize the decision tree using matplotlib and a recurisive dfs function and save it to a file
         :param root: the root node of the tree
         :param maxdepth: the maximum depth of the tree
         :param file: the file name to save the tree figure to
         :return: None
         """
-        plt.figure(figsize=(min(2**maxdepth, 2**5), maxdepth), dpi=80)  # intialize matplotlib figure
-       
         def dfs_tree_plotter(root, x, y, depth):
             """
             Visualize the given decision tree by performing deapth first search and using matplotlib
@@ -143,29 +63,105 @@ class tree_gen:
             dfs_tree_plotter(root.node['left'], xleft, ychild, depth+1)     # left child recurisve call
             dfs_tree_plotter(root.node['right'], xright, ychild, depth+1)   # right child recursive call
             return
-        
-        dfs_tree_plotter(root, x=0, y=50, depth=0)
+        plt.figure(figsize=(min(2**maxdepth, 2**5), maxdepth), dpi=80)  # intialize matplotlib figure
+        dfs_tree_plotter(self, x=0, y=50, depth=0)
         plt.axis('off') # Remove axes from plot
         plt.savefig(file) 
         plt.close()
         return
+
+    #Take an input and attempts to classify it by traversing tree
+    def evalTree(self, input):
+        """
+        FS traversal through decision tree and prins leaf nodes
+
+        Input: root node (type: tree)
+        return an integer
+        """
+        # leaf node
+        if not self.node['left'] and not self.node['right']: 
+            return self.node['attribute']
+        
+
+        attr = self.node['attribute']
+        if input[attr] <= self.node['val']:
+            return self.node['left'].evalTree(input)
+        else:    
+            return self.node['right'].evalTree(input)
+
+class treeGen:
+    def __init__(self, datapath=None, depth=0) -> None:
+        self.dataset = np.loadtxt(datapath, dtype=float)
+        self.depth = depth
+
+    def generateTree(self, trainingDataset=None, depth=0):
+        """
+        Generate a decision tree from the given data
+        :param training_dataset: 2000x8 matrix of training data
+        :param depth: used to compute maximal depth of tree - for plotting purposes
+        :return: decision tree
+        """
+        if trainingDataset is None:
+            trainingDataset = self.dataset
+        # if all samples have same label, return a leaf node with this value and depth
+        # ie if all the remaining samples are of the same sample (your dataset correspondes to only one room)
+        if len(np.unique(trainingDataset[:, -1])) <= 1:
+            print("Node completed")
+            attribute = np.unique(trainingDataset[:, -1])
+            leaf_node = treeNode(attribute=int(attribute))
+            return (leaf_node, depth)
+        # else, find the best split and return a node with the best split and depth
+        else:
+            topSet, bottomSet, splitAttrib, value = self.splitSet(trainingDataset)
+            leftBranch, leftDepth = self.generateTree(topSet, depth+1)
+            rightBranch, rightDepth = self.generateTree(bottomSet, depth+1)
+            node = treeNode(attribute=splitAttrib, val=value, left=leftBranch, right=rightBranch)
+            return (node, max(leftDepth, rightDepth))
+
+    def splitSet(self, trainingSet):
+        """
+        Find the best split for the given data
+        :param training_dataset: 2000x8 matrix of training data
+        :return: best split - row and column
+        """
+        bestSplit = (None, None, 0, 0)
+        bestEntropy = np.inf
+        #Calculate the maximum entropy for splitting 
+        for row in range(trainingSet.shape[0]):
+            #Calculate entropy for every column, but ignore last column
+            for column in range(trainingSet.shape[1]-1):
+                #Split array into top and bottom, and add entropies
+                value = trainingSet[row, column]
+                topSet = trainingSet[np.where(trainingSet[:, column] <= value)]
+                bottomSet = trainingSet[np.where(trainingSet[:, column] > value)]
+                topEntropy = self.calculateEntropy(topSet)
+                bottomEntropy = self.calculateEntropy(bottomSet)
+                totalEntropy = bottomEntropy + topEntropy 
+                #Record best entropy so far
+                if totalEntropy < bestEntropy:
+                    bestEntropy = totalEntropy
+                    bestSplit = (topSet, bottomSet, column, value)
+        return bestSplit
     
+    def calculateEntropy(self, training_dataset):
+        """
+        Calculate the best splitpoint in the given column
+        """
+        entropy = 0
+        #Need elements as a histogram
+        elements, count = np.unique(training_dataset, return_counts=True)
+        total = sum(count)
+        for i in range(len(elements)):
+            elementProb = count[i]/total
+            entropy -= elementProb * np.log2(elementProb)
+        return entropy * training_dataset.size
 
+#Testing
 if __name__ == "__main__":
-    treeNode = tree_gen()
-    # Steps to visualise:
-    # Train  tree on the clean dataset and plot tree
-    data = treeNode.clean_data
-    cross_eval = Evaluation(data)
-    cross_eval.randomise()
-    cross_eval.cross_val() # assigns training and test sets in 10-fold cross validation
-
-    print("CLEAN DATA : ")
-    for index in range(10): # performs cross evaluation of 10 training and testing sets
-        print("Generating Tree... ")
-        root, depth = treeNode.generateTree(cross_eval.training_set[index], depth=0)
-        cross_eval.root = root
-        print("Accuracy: ",cross_eval.evaluate(index))
-        print("ACTUAL: ",cross_eval.rooms_actual)
-        print("PREDICTED: ", cross_eval.rooms_predicted)
-    treeNode.visualize_tree(root, depth, "tree_diagram.png") # CHANGE TO CLEAN_DATA LATER
+    clean_filepath = "test/clean_dataset.txt"
+    noisy_filepath = "test/noisy_dataset.txt"
+    sample_filepath = "test/sample_set.txt"
+    initNode = treeGen(sample_filepath)
+    root, depth = initNode.generateTree()
+    root.visualizeTree(depth, "src/tree_diagram.png") # CHANGE TO CLEAN_DATA 
+    print(root.evalTree([-67,-60,-59,-61,-71,-86,-91])) 
