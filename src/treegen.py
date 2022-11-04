@@ -20,7 +20,7 @@ class treeNode:
         if depth == 0:
             print("up means true, down means false")
         
-    def visualizeTree(self, maxdepth, file):
+    def visualizeTree(self, maxdepth, file, displayTree=False):
         """
         Visualize the decision tree using matplotlib and a recurisive dfs function and save it to a file
         :param root: the root node of the tree
@@ -67,6 +67,25 @@ class treeNode:
         plt.savefig(file) 
         plt.close()
         return
+
+    #Take an input and attempts to classify it by traversing tree
+    def evalTree(self, input):
+        """
+        FS traversal through decision tree and prins leaf nodes
+
+        Input: root node (type: tree)
+        return an integer
+        """
+        # leaf node
+        if not self.node['left'] and not self.node['right']: 
+            return self.node['attribute']
+        
+
+        attr = self.node['attribute']
+        if input[attr] <= self.node['val']:
+            return self.node['left'].evalTree(input)
+        else:    
+            return self.node['right'].evalTree(input)
 
 class treeGen:
     def __init__(self, datapath=None, depth=0) -> None:
@@ -135,11 +154,12 @@ class treeGen:
             entropy -= elementProb * np.log2(elementProb)
         return entropy * training_dataset.size
 
-
+#Testing
 if __name__ == "__main__":
     clean_filepath = "test/clean_dataset.txt"
     noisy_filepath = "test/noisy_dataset.txt"
     sample_filepath = "test/sample_set.txt"
     initNode = treeGen(sample_filepath)
     root, depth = initNode.generateTree()
-    root.visualizeTree(depth, "tree_diagram.png") # CHANGE TO CLEAN_DATA 
+    root.visualizeTree(depth, "src/tree_diagram.png") # CHANGE TO CLEAN_DATA 
+    print(root.evalTree([-67,-60,-59,-61,-71,-86,-91])) 
