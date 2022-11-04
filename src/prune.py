@@ -1,7 +1,7 @@
 #Recursively traverses the tree and prunes it by evaluating the accuracy
+from evaluation import*
 
-
-def pruning(head, root, depth):
+def pruning(head, root, depth,test_set):
     """
     return depth
     """
@@ -19,8 +19,8 @@ def pruning(head, root, depth):
     if(root.node['val'] == None):
         return (root, 0)
 
-    left, ldepth = pruning(head, root.node["left"], depth)
-    right, rdepth = pruning(head, root.node["right"], depth)
+    left, ldepth = pruning(head, root.node["left"], depth,test_set)
+    right, rdepth = pruning(head, root.node["right"], depth,test_set)
 
     root.node["left"] = left
     root.node["right"] = right
@@ -28,14 +28,14 @@ def pruning(head, root, depth):
     is_pruned = False;
 
 
-    if(root.node["left"]["left"] == None and root.node["left"]["right"] == None and root.node["right"]["left"] == None and root.node["right"]["right"] == None):
+    if(root.node["left"].node["left"] == None and root.node["left"].node["right"] == None and root.node["right"].node["left"] == None and root.node["right"].node["right"] == None):
         
-        reference_accuracy = Evaluation(head)
+        reference_accuracy = evaluate(head,test_set)
         
-        left_subtree = dict(root.node["left"])
-        left_class = root.node["left"]["attribute"]
-        right_subtree = dict(root.node["right"])
-        right_class = root.node["right"]["attribute"]
+        left_subtree = root.node["left"]
+        left_class = root.node["left"].node["attribute"]
+        right_subtree = root.node["right"]
+        right_class = root.node["right"].node["attribute"]
         curr_val = root.node["val"]
 
         root.node["left"] = None
@@ -44,11 +44,11 @@ def pruning(head, root, depth):
 
         #Repace with left
         root.node["attribute"] = left_class
-        left_acc = Evaluation(head)
+        left_acc = evaluate(head,test_set)
 
         #Repace with right
         root.node["attribute"] = right_class
-        right_acc = Evaluation(head)
+        right_acc = evaluate(head,test_set)
 
         if(left_acc >= reference_accuracy):
             if(left_acc > right_acc):

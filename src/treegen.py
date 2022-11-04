@@ -1,4 +1,3 @@
-from turtle import color
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.axes as ax
@@ -58,7 +57,7 @@ class treeNode:
             # plot left and right edges using the same color
             x_val = [xleft, x, xright]
             y_val = [ychild, y, ychild]
-            plt.plot(x_val, y_val, color='orange')
+            plt.plot(x_val, y_val)
             
             dfs_tree_plotter(root.node['left'], xleft, ychild, depth+1)     # left child recurisve call
             dfs_tree_plotter(root.node['right'], xright, ychild, depth+1)   # right child recursive call
@@ -90,8 +89,8 @@ class treeNode:
             return self.node['right'].evalTree(input)
 
 class treeGen:
-    def __init__(self, datapath=None, depth=0) -> None:
-        self.dataset = np.loadtxt(datapath, dtype=float)
+    def __init__(self, data=None, depth=0) -> None:
+        self.dataset = data
         self.depth = depth
 
     def generateTree(self, trainingDataset=None, depth=0):
@@ -158,10 +157,22 @@ class treeGen:
 
 #Testing
 if __name__ == "__main__":
+    from evaluation import*
+    from prune import pruning
+    import numpy as np
+
     clean_filepath = "test/clean_dataset.txt"
     noisy_filepath = "test/noisy_dataset.txt"
     sample_filepath = "test/sample_set.txt"
-    initNode = treeGen(sample_filepath)
+    data = np.loadtxt(noisy_filepath, dtype=float)
+    np.random.shuffle(data) #randomises rows
+    test_set,training_set = cross_val(data)
+    initNode = treeGen(training_set[0])
     root, depth = initNode.generateTree()
-    root.visualizeTree(depth, "src/tree_diagram.png") # CHANGE TO CLEAN_DATA 
+    print("Depth: ",depth)
+    root.visualizeTree(depth, "src/tree_diagram.png")
+    print("Before: ", evaluate(root,test_set))
+    tree,depth = pruning(root,root,0,test_set)
+    tree.visualizeTree(depth, "src/tree_diagramPRUNED.png") # CHANGE TO CLEAN_DATA
+    print(evaluate(tree,test_set)) 
     print(root.evalTree([-67,-60,-59,-61,-71,-86,-91])) 

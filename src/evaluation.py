@@ -1,4 +1,4 @@
-
+import numpy as np
 # self.rooms_actual = {1:0,2:0,3:0,4:0}
 # self.rooms_predicted = {1:0,2:0,3:0,4:0}
 # self.root = None
@@ -6,20 +6,20 @@
 # self.test_set ={}
 # self.training_set = {}
 
-        
-def randomise(data): #randomises the input data
-    np.random.shuffle(data)
 
-def cross_val(data,test_set,training_set,k=10): #k-fold cross validation
-
+def cross_val(data,k=10): #k-fold cross validation
+    test_set = {1: 0, 2:0, 3:0, 4:0}
+    training_set = {1: 0, 2:0, 3:0, 4:0}
     split = len(data)//k
     for i in range(k): #splits data into training:testing
         test_set[i] = data[i*split:(i*split)+split]
         training_set[i] = np.delete(data,slice(i*split,(i*split)+split),axis = 0)
+    return test_set,training_set
 
-def evaluate(root, test_set,rooms_actual, rooms_predicted, test_set_index=0):
+def evaluate(root,test_set,test_set_index=0):
     correct = 0
     total = 0
+    rooms_actual, rooms_predicted = {1: 0, 2:0, 3:0, 4:0}, {1: 0, 2:0, 3:0, 4:0}
 
     for row in test_set[test_set_index]: #loops through each test case
         total+=1
@@ -29,7 +29,7 @@ def evaluate(root, test_set,rooms_actual, rooms_predicted, test_set_index=0):
         if prediction == row[-1]:
             correct+=1
     return (correct/total)            
-
+    
 
 def eval_tree(root, input):
     """ DFS traversal through decision tree and prins leaf nodes
