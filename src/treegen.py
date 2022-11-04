@@ -1,3 +1,4 @@
+from turtle import color
 import numpy as np
 import matplotlib.pyplot as plt
 from evaluation import Evaluation
@@ -124,8 +125,9 @@ class tree_gen:
                 return
             
             # at least one child node:
+            bbox_style = dict(boxstyle="square", ec=(0., 0., 0.), fc=(1., 1., 1.))
             plt.text(x, y, str("x" + str(root.node['attribute'])) + " <= " + str(root.node['val']), size='smaller', rotation=0,
-                    ha="center", va="center", bbox=dict(boxstyle="round", ec=(0., 0., 0.), fc=(1., 1., 1.)))
+                    ha="center", va="center", bbox=bbox_style)
             
             # dy: proportional to 1/(2^depth), since  every level has a max of 2**depth nodes. 
             # dx: divided into 2^depth parts
@@ -136,7 +138,7 @@ class tree_gen:
             # plot left and right edges using the same color
             x_val = [xleft, x, xright]
             y_val = [ychild, y, ychild]
-            plt.plot(x_val, y_val)
+            plt.plot(x_val, y_val, color='orange')
             
             dfs_tree_plotter(root.node['left'], xleft, ychild, depth+1)     # left child recurisve call
             dfs_tree_plotter(root.node['right'], xright, ychild, depth+1)   # right child recursive call
