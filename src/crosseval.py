@@ -1,5 +1,5 @@
-'''import numpy as np
-class Eval:
+import numpy as np
+class eval():
     def eval_tree(self, root, input):
         """ DFS traversal through decision tree and prins leaf nodes
 
@@ -15,6 +15,4 @@ class Eval:
         if input[attr] <= root.node['val']:
             return self.eval_tree(root.node['left'], input)
         else:    
-            return self.eval_tree(root.node['right'], input)    '''
-
-#This is the base function, modified version used in evaluation.py. Delete this later :)
+            return self.eval_tree(root.node['right'], input)
