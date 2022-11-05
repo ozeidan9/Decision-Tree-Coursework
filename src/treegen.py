@@ -1,13 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.axes as ax
+from matplotlib.patches import BoxStyle
 
 class treeNode:
     def __init__(self, attribute, val=None, left=None, right=None):
-        #Node attributes
+        # Node attributes
         self.node = {'attribute': attribute, 'val': val, 'left': left, 'right': right} 
 
-    #For debugging purposes
+    # For debugging purposes
     def printTree(self, node=None, depth=0):
         if node is None:
             node = self.node
@@ -20,7 +20,7 @@ class treeNode:
         if depth == 0:
             print("up means true, down means false")
         
-    def visualizeTree(self, maxdepth, file, displayTree=False):
+    def visualizeTree(self, maxdepth, file, title, displayTree=False):
         """
         Visualize the decision tree using matplotlib and a recurisive dfs function and save it to a file
         :param root: the root node of the tree
@@ -30,48 +30,45 @@ class treeNode:
         """
         def dfs_tree_plotter(root, x, y, depth):
             """
-            Visualize the given decision tree by performing deapth first search and using matplotlib
+            Visualize the given decision tree by performing depth first search and using matplotlib
             :param tree: current tree node
             :param x: x coordinate of current node
             :param y: y coordinate of each level
             :depth: current depth of tree
             :return: None
             """
+            # bbox_style = dict(boxstyle="square", fc="w")
+            
             if not root.node['left'] and not root.node['right']: 
                 # leaf node:
                 plt.text(x, y, str(root.node['attribute']), size='smaller', rotation=0, ha="center", va="center",
-                        bbox=dict(boxstyle="round", ec=(0., 0., 0.), fc=(1., 1., 1.)))
+                        bbox=dict(boxstyle="circle", fc="w"))
                 return
             
             # at least one child node:
-            bbox_style = dict(boxstyle="square", ec=(0., 0., 0.), fc=(1., 1., 1.))
-            plt.text(x, y, str("x" + str(root.node['attribute'])) + " <= " + str(root.node['val']), size='smaller', rotation=0,
-                    ha="center", va="center", bbox=bbox_style)
+            plt.text(x, y, str("x" + str(root.node['attribute'])) + "<=" + str(root.node['val']), size='smaller',
+                    ha="center", va="center", bbox=dict(boxstyle="round", fc="w"))
             
-            # dy: proportional to 1/(2^depth), since  every level has a max of 2**depth nodes. 
-            # dx: divided into 2^depth parts
-            xleft = x - 2/(2**depth)
-            xright = x + 2/(2**depth)
-            ychild = y - 5  # equal heigh for child nodes
+            xleft, xright = x - 2.5/(2**depth), x + 2.5/(2**depth)          # dx: proportional to 1/(2^depth), since every level has a max of 2^depth nodes. 
+            ychild = y - 5                                                  # dy: equal height for child nodes
             
-            # plot left and right edges using the same color
-            x_val = [xleft, x, xright]
-            y_val = [ychild, y, ychild]
-            plt.plot(x_val, y_val)
+            plt.plot([xleft, x, xright], [ychild , y, ychild])              # plot left and right edges using the same color
             
-            dfs_tree_plotter(root.node['left'], xleft, ychild, depth+1)     # left child recurisve call
+            dfs_tree_plotter(root.node['left'], xleft, ychild, depth+1)     # left child recursive call
             dfs_tree_plotter(root.node['right'], xright, ychild, depth+1)   # right child recursive call
             return
-        plt.figure(figsize=(min(2**maxdepth, 2**5), maxdepth), dpi=80)  # intialize matplotlib figure
+        
+        plt.figure(figsize=(min(2**maxdepth, 32), maxdepth), dpi=80)            # intialize matplotlib figure
+        plt.suptitle(title + "    |   " + "Left: <=, Right: >", fontsize=30)    # set title and legend
         dfs_tree_plotter(self, x=0, y=50, depth=0)
-        plt.axis('off') # Remove axes from plot
+        plt.axis('off')                                                     # Remove plot axes
         plt.savefig(file) 
         plt.close()
         return
-
+        
 
 class treeGen:
-    def __init__(self, data=None, depth=0) -> None:
+    def __init__(self, data=None, depth=0):
         self.dataset = data
         self.depth = depth
 
@@ -173,13 +170,21 @@ if __name__ == "__main__":
     '''initNode = treeGen(data)
     root, depth = initNode.generateTree()
     print("Depth: ",depth)
-    root.visualizeTree(depth, "src/tree_diagramAll_data.png")
-    #print("Before Pruning: ")
-    tree,depth = pruning(root,root,data)
-    #print("After Pruning: ")
-    tree.visualizeTree(depth, f"src/tree_diagramPRUNED_All_Data.png") # CHANGE TO CLEAN_DATA'''
+    
+    root.visualizeTree(depth, "src/tree_diagram.png", "Decision Tree")
+    print("Before: ", evaluate(root,test_set))
+    tree,depth = pruning(root,root,test_set)
+    tree.visualizeTree(depth, "src/tree_diagramPRUNED.png", "Pruned Decision Tree") # CHANGE TO CLEAN_DATA
+    print(evaluate(tree,test_set)) 
+    print(root.evalTree([-67,-60,-59,-61,-71,-86,-91])) 
 
-    print("PRE-PRUNE: ",accuracy,precision,recall,f1)
-    print("\n")
-    print("POST-PRUNE: ",pruned_accuracy,pruned_precision,pruned_recall,pruned_f1 )
+    # root.visualizeTree(depth, "src/tree_diagramAll_data.png")
+    #print("Before Pruning: ")
+    # tree,depth = pruning(root,root,data)
+    #print("After Pruning: ")
+    # tree.visualizeTree(depth, f"src/tree_diagramPRUNED_All_Data.png") # CHANGE TO CLEAN_DATA'''
+
+    # print("PRE-PRUNE: ",accuracy,precision,recall,f1)
+    # print("\n")
+    # print("POST-PRUNE: ",pruned_accuracy,pruned_precision,pruned_recall,pruned_f1 )
      
