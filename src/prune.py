@@ -1,7 +1,7 @@
 #Recursively traverses the tree and prunes it by evaluating the accuracy
 from evaluation import*
 
-def pruning(head, root, depth,test_set):
+def pruning(head, root,test_set):
     """
     return depth
     """
@@ -19,23 +19,25 @@ def pruning(head, root, depth,test_set):
     if(root.node['val'] == None):
         return (root, 0)
 
-    left, ldepth = pruning(head, root.node["left"], depth,test_set)
-    right, rdepth = pruning(head, root.node["right"], depth,test_set)
+    left, ldepth = pruning(head, root.node["left"], test_set)
+    right, rdepth = pruning(head, root.node["right"], test_set)
 
     root.node["left"] = left
     root.node["right"] = right
 
-    is_pruned = False;
+    is_pruned = False
 
+    left_child = root.node["left"]
+    right_child = root.node["right"]
 
-    if(root.node["left"].node["left"] == None and root.node["left"].node["right"] == None and root.node["right"].node["left"] == None and root.node["right"].node["right"] == None):
+    if(left_child.node["left"] == None and left_child.node["right"] == None and right_child.node["left"] == None and right_child.node["right"] == None):
         
         reference_accuracy = evaluate(head,test_set)
         
-        left_subtree = root.node["left"]
-        left_class = root.node["left"].node["attribute"]
-        right_subtree = root.node["right"]
-        right_class = root.node["right"].node["attribute"]
+        left_subtree = left_child
+        left_class = left_child.node["attribute"]
+        right_subtree = right_child
+        right_class = right_child.node["attribute"]
         curr_val = root.node["val"]
 
         root.node["left"] = None
@@ -70,10 +72,3 @@ def pruning(head, root, depth,test_set):
 
 
     return (root, 1 + max(ldepth, rdepth))
-    
-
-
-
-
-
-
