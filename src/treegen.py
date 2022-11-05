@@ -65,24 +65,7 @@ class treeNode:
         plt.savefig(file) 
         plt.close()
         return
-
-    #Take an input and attempts to classify it by traversing tree
-    def evalTree(self, input):
-        """
-        FS traversal through decision tree and prins leaf nodes
-
-        Input: root node (type: tree)
-        return an integer
-        """
-        # leaf node
-        if not self.node['left'] and not self.node['right']: 
-            return self.node['attribute']
-
-        attr = self.node['attribute']
-        if input[attr] <= self.node['val']:
-            return self.node['left'].evalTree(input)
-        else:    
-            return self.node['right'].evalTree(input)
+        
 
 class treeGen:
     def __init__(self, data=None, depth=0):
@@ -101,7 +84,7 @@ class treeGen:
         # if all samples have same label, return a leaf node with this value and depth
         # ie if all the remaining samples are of the same sample (your dataset correspondes to only one room)
         if len(np.unique(trainingDataset[:, -1])) <= 1:
-            print("Node completed")
+            #print("Node completed")
             attribute = np.unique(trainingDataset[:, -1])
             leaf_node = treeNode(attribute=int(attribute))
             return (leaf_node, depth)
@@ -162,13 +145,46 @@ if __name__ == "__main__":
     sample_filepath = "test/sample_set.txt"
     data = np.loadtxt(noisy_filepath, dtype=float)
     np.random.shuffle(data) #randomises rows
-    test_set,training_set = cross_val(data)
-    initNode = treeGen(training_set[0])
+    test_set,training_set,validation_set = cross_val(data)
+    accuracy,precision,recall,f1 = 0,{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0}
+    pruned_accuracy,pruned_precision,pruned_recall,pruned_f1 = 0,{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0}
+    print(len(data))
+    for i in range(10):
+        print(i,": ")
+        print("length: ", len(test_set[i]),len(validation_set[i]),len(training_set[i]))
+    #macro_avg_f1= 0
+    for i in range(10):
+        print("Generating Tree: ",i+1)
+        initNode = treeGen(training_set[i])
+        root, depth = initNode.generateTree()
+        print("Depth: ",depth)
+        root.visualizeTree(depth, "src/tree_diagram.png")
+        #print("Before Pruning: ")
+        accuracy,precision,recall,f1 = calc_avg_metrics(root,test_set[i],accuracy,precision,recall,f1)
+        
+        tree,depth = pruning(root,root,validation_set[i])
+        pruned_accuracy,pruned_precision,pruned_recall,pruned_f1 = calc_avg_metrics(tree, test_set[i],pruned_accuracy,pruned_precision,pruned_recall,pruned_f1)
+        #print("After Pruning: ")
+        tree.visualizeTree(depth, f"src/tree_diagramPRUNED{i}.png") # CHANGE TO CLEAN_DATA
+
+    '''initNode = treeGen(data)
     root, depth = initNode.generateTree()
     print("Depth: ",depth)
+    
     root.visualizeTree(depth, "src/tree_diagram.png", "Decision Tree")
     print("Before: ", evaluate(root,test_set))
     tree,depth = pruning(root,root,test_set)
     tree.visualizeTree(depth, "src/tree_diagramPRUNED.png", "Pruned Decision Tree") # CHANGE TO CLEAN_DATA
     print(evaluate(tree,test_set)) 
     print(root.evalTree([-67,-60,-59,-61,-71,-86,-91])) 
+
+    # root.visualizeTree(depth, "src/tree_diagramAll_data.png")
+    #print("Before Pruning: ")
+    # tree,depth = pruning(root,root,data)
+    #print("After Pruning: ")
+    # tree.visualizeTree(depth, f"src/tree_diagramPRUNED_All_Data.png") # CHANGE TO CLEAN_DATA'''
+
+    # print("PRE-PRUNE: ",accuracy,precision,recall,f1)
+    # print("\n")
+    # print("POST-PRUNE: ",pruned_accuracy,pruned_precision,pruned_recall,pruned_f1 )
+     
