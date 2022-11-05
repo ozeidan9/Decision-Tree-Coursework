@@ -2,13 +2,24 @@ import numpy as np
 
 
 def cross_val(data,k=10): #k-fold cross validation
-    test_set = {1: 0, 2:0, 3:0, 4:0}
-    training_set = {1: 0, 2:0, 3:0, 4:0}
-    split = len(data)//k
-    for i in range(k): #splits data into training:testing
-        test_set[i] = data[i*split:(i*split)+split]
+    test_set = {}
+    training_set = {}
+    validation_set = {}
+
+    split = len(data)//(k//2)
+    validation_split  = len(data)//(k)#splits data into training:testing:validation (2 sweeps  = 10)
+    for i in range(k//2): 
+        test_set[i] = data[i*split:(i*split)+validation_split]
+        validation_set[i] = data[(i*split)+validation_split:(i*split)+split]
         training_set[i] = np.delete(data,slice(i*split,(i*split)+split),axis = 0)
-    return test_set,training_set
+    
+    for i in range(k//2):
+        index = i+k//2 
+        validation_set[index] = data[i*split:(i*split)+validation_split]
+        test_set[index] = data[(i*split)+validation_split:(i*split)+split]
+        training_set[index] = np.delete(data,slice(i*split,(i*split)+split),axis = 0)
+
+    return test_set,training_set,validation_set
 
 def evaluate(root,test_set,is_pruning = 1):
 
@@ -29,7 +40,7 @@ def evaluate(root,test_set,is_pruning = 1):
             true_positives[prediction]+=1
         else:
             false_positives[prediction]+=1
-    print()
+       
     accuracy = correct/total
     if is_pruning ==1:
         return accuracy #just returns accuracy if this function is used by pruning
@@ -63,3 +74,22 @@ def get_metrics(rooms_actual,true_positives,false_positives):
         f1[room] = (2*precision[room]*recall[room])/(precision[room]+recall[room])
 
     return ((precision,recall,f1))  
+
+
+def calc_avg_metrics(root, test_set, accuracy, precision, recall, f1):
+    temp_accuracy  = accuracy
+    accuracy,rooms_actual,true_positives,false_positives = evaluate(root,test_set,0)
+    accuracy += temp_accuracy
+
+    metrics = get_metrics(rooms_actual,true_positives,false_positives)
+    for i in range(1,5):
+        precision[i] += metrics[0][i]
+        recall[i]+= metrics[1][i]
+        f1[i]+= metrics[2][i]
+        if i == 9: #Divides by k=10 to get averaged metrics
+            precision[i]/=10
+            recall[i]/=10
+            f1[i]/=10
+            accuracy/=10
+
+    return accuracy,precision,recall,f1

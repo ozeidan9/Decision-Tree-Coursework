@@ -69,24 +69,6 @@ class treeNode:
         plt.close()
         return
 
-    #Take an input and attempts to classify it by traversing tree
-    def evalTree(self, input):
-        """
-        FS traversal through decision tree and prins leaf nodes
-
-        Input: root node (type: tree)
-        return an integer
-        """
-        # leaf node
-        if not self.node['left'] and not self.node['right']: 
-            return self.node['attribute']
-        
-
-        attr = self.node['attribute']
-        if input[attr] <= self.node['val']:
-            return self.node['left'].evalTree(input)
-        else:    
-            return self.node['right'].evalTree(input)
 
 class treeGen:
     def __init__(self, data=None, depth=0) -> None:
@@ -161,40 +143,18 @@ if __name__ == "__main__":
     from prune import pruning
     import numpy as np
 
-    def calc_avg_metrics(i,is_pruned= 0):
-        if is_pruned == 0:
-            new_accuracy,rooms_actual,true_positives,false_positives = evaluate(root,test_set[i],0)
-            #accuracy += new_accuracy
-
-            metrics = get_metrics(rooms_actual,true_positives,false_positives)
-            for i in range(1,5):
-                precision[i] += metrics[0][i]
-                recall[i]+= metrics[1][i]
-                f1[i]+= metrics[2][i]
-            print("pre-")
-            print(accuracy,precision,recall,f1)
-        else:
-            new_accuracy,rooms_actual,true_positives,false_positives = evaluate(root,test_set[i],0)
-            #pruned_accuracy += new_accuracy
-            metrics = get_metrics(rooms_actual,true_positives,false_positives)
-            for i in range(1,5):
-                pruned_precision[i] += metrics[0][i]
-                pruned_recall[i]+= metrics[1][i]
-                pruned_f1[i]+= metrics[2][i]
-            print("post-")
-            print(pruned_accuracy,pruned_precision,pruned_recall,pruned_f1)
-            
-
-
     clean_filepath = "test/clean_dataset.txt"
     noisy_filepath = "test/noisy_dataset.txt"
     sample_filepath = "test/sample_set.txt"
-    data = np.loadtxt(clean_filepath, dtype=float)
+    data = np.loadtxt(noisy_filepath, dtype=float)
     np.random.shuffle(data) #randomises rows
-    test_set,training_set = cross_val(data)
+    test_set,training_set,validation_set = cross_val(data)
     accuracy,precision,recall,f1 = 0,{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0}
     pruned_accuracy,pruned_precision,pruned_recall,pruned_f1 = 0,{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0}
-
+    print(len(data))
+    for i in range(10):
+        print(i,": ")
+        print("length: ", len(test_set[i]),len(validation_set[i]),len(training_set[i]))
     #macro_avg_f1= 0
     for i in range(10):
         print("Generating Tree: ",i+1)
@@ -203,13 +163,22 @@ if __name__ == "__main__":
         print("Depth: ",depth)
         root.visualizeTree(depth, "src/tree_diagram.png")
         #print("Before Pruning: ")
-        calc_avg_metrics(i)
+        accuracy,precision,recall,f1 = calc_avg_metrics(root,test_set[i],accuracy,precision,recall,f1)
         
-        tree,depth = pruning(root,root,0,test_set[i])
-        calc_avg_metrics(i,1)
+        tree,depth = pruning(root,root,validation_set[i])
+        pruned_accuracy,pruned_precision,pruned_recall,pruned_f1 = calc_avg_metrics(tree, test_set[i],pruned_accuracy,pruned_precision,pruned_recall,pruned_f1)
         #print("After Pruning: ")
         tree.visualizeTree(depth, f"src/tree_diagramPRUNED{i}.png") # CHANGE TO CLEAN_DATA
-        #print(evaluate(tree,test_set[i])) 
+
+    '''initNode = treeGen(data)
+    root, depth = initNode.generateTree()
+    print("Depth: ",depth)
+    root.visualizeTree(depth, "src/tree_diagramAll_data.png")
+    #print("Before Pruning: ")
+    tree,depth = pruning(root,root,data)
+    #print("After Pruning: ")
+    tree.visualizeTree(depth, f"src/tree_diagramPRUNED_All_Data.png") # CHANGE TO CLEAN_DATA'''
+
     print("PRE-PRUNE: ",accuracy,precision,recall,f1)
     print("\n")
     print("POST-PRUNE: ",pruned_accuracy,pruned_precision,pruned_recall,pruned_f1 )
