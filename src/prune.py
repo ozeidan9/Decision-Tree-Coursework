@@ -3,7 +3,7 @@ from evaluation import*
 
 def pruning(head, root,test_set):
     """
-    return depth
+    return pruned tree
     """
     # Split the dataset according the tree attributes and values
     # Classify the majority element in such a dataset split
@@ -16,28 +16,26 @@ def pruning(head, root,test_set):
 
     #evaluation_du.accuracy_validation(root)
 
-    if(root.node['val'] == None):
-        return (root, 0)
+    if(root.node["val"] == None):
+        return root
 
-    left, ldepth = pruning(head, root.node["left"], test_set)
-    right, rdepth = pruning(head, root.node["right"], test_set)
+    left = pruning(head, root.node["left"], test_set)
+    right = pruning(head, root.node["right"], test_set)
 
     root.node["left"] = left
     root.node["right"] = right
 
-    is_pruned = False
+    root.node["left"] = root.node["left"]
+    root.node["right"] = root.node["right"]
 
-    left_child = root.node["left"]
-    right_child = root.node["right"]
-
-    if(left_child.node["left"] == None and left_child.node["right"] == None and right_child.node["left"] == None and right_child.node["right"] == None):
+    if(root.node["left"].node["left"] == None and root.node["left"].node["right"] == None and root.node["right"].node["left"] == None and root.node["right"].node["right"] == None):
         
         reference_accuracy = evaluate(head,test_set)
         
-        left_subtree = left_child
-        left_class = left_child.node["attribute"]
-        right_subtree = right_child
-        right_class = right_child.node["attribute"]
+        left_subtree = root.node["left"]
+        left_class = root.node["left"].node["attribute"]
+        right_subtree = root.node["right"]
+        right_class = root.node["right"].node["attribute"]
         curr_val = root.node["val"]
 
         root.node["left"] = None
@@ -54,11 +52,9 @@ def pruning(head, root,test_set):
 
         if(left_acc >= reference_accuracy):
             if(left_acc > right_acc):
-                is_pruned = True
                 root.node["attribute"] = left_class
          
         elif(right_acc >= reference_accuracy):
-            is_pruned = True
             root.node["attribute"] = right_class
 
         else:
@@ -67,8 +63,22 @@ def pruning(head, root,test_set):
             root.node["right"] = right_subtree
 
 
-    if(is_pruned):
-        return (root, 0)
+  
+    return root
 
 
-    return (root, 1 + max(ldepth, rdepth))
+def calculate_depth(tree):
+    """
+    return depth of pruned tree
+    """
+    if(tree.node['val'] == None):
+        return 1
+    
+    left = calculate_depth(tree.node["left"])
+    right = calculate_depth(tree.node["right"])
+
+    return 1 + max(left, right)
+
+
+
+
