@@ -189,7 +189,7 @@ if __name__ == "__main__":
     clean_filepath = "test/clean_dataset.txt"
     noisy_filepath = "test/noisy_dataset.txt"
     sample_filepath = "test/sample_set.txt"
-    data = np.loadtxt(noisy_filepath, dtype=float)
+    data = np.loadtxt(clean_filepath, dtype=float)
     np.random.shuffle(data) #randomises rows
     test_set,training_set = cross_val(data)
     accuracy,precision,recall,f1 = 0,{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0}
@@ -208,7 +208,7 @@ if __name__ == "__main__":
         tree,depth = pruning(root,root,0,test_set[i])
         calc_avg_metrics(i,1)
         #print("After Pruning: ")
-        tree.visualizeTree(depth, "src/tree_diagramPRUNED.png") # CHANGE TO CLEAN_DATA
+        tree.visualizeTree(depth, f"src/tree_diagramPRUNED{i}.png") # CHANGE TO CLEAN_DATA
         #print(evaluate(tree,test_set[i])) 
     print("PRE-PRUNE: ",accuracy,precision,recall,f1)
     print("\n")
