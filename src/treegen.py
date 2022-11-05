@@ -64,6 +64,8 @@ class treeNode:
         plt.figure(figsize=(min(2**maxdepth, 2**5), maxdepth), dpi=80)  # intialize matplotlib figure
         dfs_tree_plotter(self, x=0, y=50, depth=0)
         plt.axis('off') # Remove axes from plot
+        if displayTree:
+            plt.show()
         plt.savefig(file) 
         plt.close()
         return
