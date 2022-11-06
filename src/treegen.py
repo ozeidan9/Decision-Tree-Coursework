@@ -137,7 +137,7 @@ class treeGen:
 #Testing
 if __name__ == "__main__":
     from evaluation import*
-    from prune import pruning
+    from prune import pruning,calculate_depth
     import numpy as np
 
     clean_filepath = "test/clean_dataset.txt"
@@ -162,10 +162,11 @@ if __name__ == "__main__":
         #print("Before Pruning: ")
         accuracy,precision,recall,f1 = calc_avg_metrics(root,test_set[i],accuracy,precision,recall,f1)
         
-        tree,depth = pruning(root,root,validation_set[i])
+        tree = pruning(root,root,validation_set[i])
+        pruned_depth = calculate_depth(tree)
         pruned_accuracy,pruned_precision,pruned_recall,pruned_f1 = calc_avg_metrics(tree, test_set[i],pruned_accuracy,pruned_precision,pruned_recall,pruned_f1)
-        #print("After Pruning: ")
-        tree.visualizeTree(depth, f"src/tree_diagramPRUNED{i}.png") # CHANGE TO CLEAN_DATA
+        print("After Pruning: ",pruned_depth)
+        tree.visualizeTree(pruned_depth, f"src/tree_diagramPRUNED{i}.png") # CHANGE TO CLEAN_DATA
 
     '''initNode = treeGen(data)
     root, depth = initNode.generateTree()
