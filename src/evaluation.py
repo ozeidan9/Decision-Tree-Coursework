@@ -21,12 +21,11 @@ def cross_val(data,k=10): #k-fold cross validation
 
     return test_set,training_set,validation_set
 
-def evaluate(root,test_set,is_pruning = 1):
+def evaluate(root,test_set,is_pruning=1,confusion_matrix=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]):
 
     rooms_actual = {1:0,2:0,3:0,4:0}
     true_positives = {1:0,2:0,3:0,4:0}
     false_positives = {1:0,2:0,3:0,4:0}
-
 
     correct = 0
     total = 0
@@ -35,6 +34,7 @@ def evaluate(root,test_set,is_pruning = 1):
         total+=1
         rooms_actual[row[-1]]+=1 # for confusion matrix
         prediction = eval_tree(root,row)
+        confusion_matrix[(int(row[-1]))-1][(int(prediction))-1] +=1
         if prediction == row[-1]:
             correct+=1
             true_positives[prediction]+=1
@@ -45,7 +45,7 @@ def evaluate(root,test_set,is_pruning = 1):
     if is_pruning ==1:
         return accuracy #just returns accuracy if this function is used by pruning
     else:
-        return accuracy,rooms_actual,true_positives,false_positives          
+        return confusion_matrix,accuracy,rooms_actual,true_positives,false_positives          
     
 
 def eval_tree(root, input):
@@ -76,9 +76,9 @@ def get_metrics(rooms_actual,true_positives,false_positives):
     return ((precision,recall,f1))  
 
 
-def calc_avg_metrics(root, test_set, accuracy, precision, recall, f1):
+def calc_avg_metrics(root, test_set, accuracy, precision, recall, f1,confusion_matrix):
     temp_accuracy  = accuracy
-    accuracy,rooms_actual,true_positives,false_positives = evaluate(root,test_set,0)
+    confusion_matrix,accuracy,rooms_actual,true_positives,false_positives = evaluate(root,test_set,0,confusion_matrix)
     accuracy += temp_accuracy
 
     metrics = get_metrics(rooms_actual,true_positives,false_positives)
@@ -92,4 +92,4 @@ def calc_avg_metrics(root, test_set, accuracy, precision, recall, f1):
             f1[i]/=10
             accuracy/=10
 
-    return accuracy,precision,recall,f1
+    return confusion_matrix,accuracy,precision,recall,f1

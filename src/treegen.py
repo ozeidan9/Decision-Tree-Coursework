@@ -26,6 +26,7 @@ class treeNode:
         :param root: the root node of the tree
         :param maxdepth: the maximum depth of the tree
         :param file: the file name to save the tree figure to
+        :param title: the title of the image
         :return: None
         """
         def dfs_tree_plotter(root, x, y, depth):
@@ -148,25 +149,25 @@ if __name__ == "__main__":
     test_set,training_set,validation_set = cross_val(data)
     accuracy,precision,recall,f1 = 0,{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0}
     pruned_accuracy,pruned_precision,pruned_recall,pruned_f1 = 0,{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0}
-    print(len(data))
-    for i in range(10):
-        print(i,": ")
-        print("length: ", len(test_set[i]),len(validation_set[i]),len(training_set[i]))
-    #macro_avg_f1= 0
+    confusion_matrix = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
+    confusion_matrix_pruned = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
+
     for i in range(10):
         print("Generating Tree: ",i+1)
         initNode = treeGen(training_set[i])
         root, depth = initNode.generateTree()
-        print("Depth: ",depth)
-        root.visualizeTree(depth, "src/tree_diagram.png")
+        print("Pre-Pruned Depth: ",depth)
+        root.visualizeTree(depth, f"src/tree_diagram{i}.png",f"Pre-Pruned Tree{i}")
         #print("Before Pruning: ")
-        accuracy,precision,recall,f1 = calc_avg_metrics(root,test_set[i],accuracy,precision,recall,f1)
-        
+        confusion_matrix,accuracy,precision,recall,f1 = calc_avg_metrics(root,test_set[i],accuracy,precision,recall,f1,confusion_matrix)
+        #print(confusion_matrix)
         tree = pruning(root,root,validation_set[i])
+        print("Pruning: ")
         pruned_depth = calculate_depth(tree)
-        pruned_accuracy,pruned_precision,pruned_recall,pruned_f1 = calc_avg_metrics(tree, test_set[i],pruned_accuracy,pruned_precision,pruned_recall,pruned_f1)
+        confusion_matrix_pruned,pruned_accuracy,pruned_precision,pruned_recall,pruned_f1 = calc_avg_metrics(tree, test_set[i],pruned_accuracy,pruned_precision,pruned_recall,pruned_f1,confusion_matrix_pruned)
+        #print(confusion_matrix_pruned)
         print("After Pruning: ",pruned_depth)
-        tree.visualizeTree(pruned_depth, f"src/tree_diagramPRUNED{i}.png") # CHANGE TO CLEAN_DATA
+        tree.visualizeTree(pruned_depth, f"src/tree_pruned{i}.png",f"Pruned Tree{i}") # CHANGE TO CLEAN_DATA
 
     '''initNode = treeGen(data)
     root, depth = initNode.generateTree()
@@ -185,7 +186,7 @@ if __name__ == "__main__":
     #print("After Pruning: ")
     # tree.visualizeTree(depth, f"src/tree_diagramPRUNED_All_Data.png") # CHANGE TO CLEAN_DATA'''
 
-    # print("PRE-PRUNE: ",accuracy,precision,recall,f1)
-    # print("\n")
-    # print("POST-PRUNE: ",pruned_accuracy,pruned_precision,pruned_recall,pruned_f1 )
+    print(f"POST-PRUNE: Accuracy: {accuracy} \n Precision: {precision} \n Recall: {recall}\n F1: {f1} \n")
+    print(f"POST-PRUNE: Accuracy: {pruned_accuracy} \n Precision: {pruned_precision} \n Recall: {pruned_recall}\n F1: {pruned_f1}")
+    print(f"Confusion Matrix: \n{confusion_matrix}\n Pruned Confusion Matrix: \n{confusion_matrix_pruned}")
      
