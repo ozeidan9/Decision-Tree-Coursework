@@ -149,8 +149,8 @@ def normalise(precision,recall,f1,conf_matrix, k=10):
     for i in f1:
         if f1[i]!=0:
             f1[i]/=k
-    for i in range(len(conf_matrix)-1):
-        for j in range(len(conf_matrix[i])-1):
+    for i in range(len(conf_matrix)):
+        for j in range(len(conf_matrix[i])):
             if conf_matrix[i][j]!=0:
                 conf_matrix[i][j]/= k
     return precision,recall,f1,conf_matrix
