@@ -93,3 +93,19 @@ def calc_avg_metrics(root, test_set, accuracy, precision, recall, f1,confusion_m
             accuracy/=10
 
     return confusion_matrix,accuracy,precision,recall,f1
+
+def normalise(precision,recall,f1,conf_matrix):
+    for i in precision:
+        if precision[i]!=0:
+            precision[i]/=10
+    for i in recall:
+        if recall[i]!=0:
+            recall[i]/=10
+    for i in f1:
+        if f1[i]!=0:
+            f1[i]/=10
+    for i in range(len(conf_matrix)-1):
+        for j in range(len(conf_matrix[i])-1):
+            if conf_matrix[i][j]!=0:
+                conf_matrix[i][j]/= 10
+    return precision,recall,f1,conf_matrix
