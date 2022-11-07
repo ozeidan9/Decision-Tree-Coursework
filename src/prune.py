@@ -1,7 +1,6 @@
+from src.evaluation import evaluate
 #Recursively traverses the tree and prunes it by evaluating the accuracy
-from evaluation import*
-
-def pruning(head, root, test_set):
+def pruning(head, root,test_set):
     """
     Prunes the tree if specific conditions are met 
     :param head a pointer to the root of the tree that stays constant
@@ -89,7 +88,4 @@ def calculate_depth(tree):
     right = calculate_depth(tree.node["right"])
 
     return 1 + max(left, right)
-
-
-
 

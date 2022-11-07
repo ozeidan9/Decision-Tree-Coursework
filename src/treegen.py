@@ -1,7 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import BoxStyle
-
 class treeNode:
     def __init__(self, attribute, val=None, left=None, right=None):
         # Node attributes
@@ -64,6 +62,8 @@ class treeNode:
         dfs_tree_plotter(self, x=0, y=50, depth=0)
         plt.axis('off')                                                     # Remove plot axes
         plt.savefig(file) 
+        if displayTree:
+            plt.show()
         plt.close()
         return
         
@@ -134,48 +134,3 @@ class treeGen:
             elementProb = count[i]/total
             entropy -= elementProb * np.log2(elementProb)
         return entropy * training_dataset.size
-
-#Testing
-if __name__ == "__main__":
-    from evaluation import*
-    from prune import pruning,calculate_depth
-    import numpy as np
-
-    clean_filepath = "test/clean_dataset.txt"
-    noisy_filepath = "test/noisy_dataset.txt"
-    sample_filepath = "test/sample_set.txt"
-    data = np.loadtxt(clean_filepath, dtype=float)
-    np.random.shuffle(data) #randomises rows
-    test_set,training_set,validation_set = cross_val(data)
-    accuracy,precision,recall,f1 = 0,{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0}
-    pruned_accuracy,pruned_precision,pruned_recall,pruned_f1 = 0,{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0}
-    confusion_matrix = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
-    confusion_matrix_pruned = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
-
-    for i in range(10):
-        print("Generating Tree: ",i+1)
-        initNode = treeGen(training_set[i])
-        root, depth = initNode.generateTree()
-        print("Pre-Pruned Depth: ",depth)
-        root.visualizeTree(depth, f"src/tree_diagram{i}.png","Decision Tree")
-        #print("Before Pruning: ")
-        confusion_matrix,accuracy,precision,recall,f1 = calc_avg_metrics(root,test_set[i],accuracy,precision,recall,f1,confusion_matrix)
-        #print(confusion_matrix)
-        tree = pruning(root,root,validation_set[i])
-        pruned_depth = calculate_depth(tree)
-        confusion_matrix_pruned,pruned_accuracy,pruned_precision,pruned_recall,pruned_f1 = calc_avg_metrics(tree, test_set[i],pruned_accuracy,pruned_precision,pruned_recall,pruned_f1,confusion_matrix_pruned)
-        #print(confusion_matrix_pruned)
-        print("After Pruning: ",pruned_depth)
-        tree.visualizeTree(pruned_depth, f"src/tree_pruned{i}.png","Pruned Tree") # CHANGE TO CLEAN_DATA
-
-    accuracy/=10
-    pruned_accuracy/=10
-    precision,recall,f1,confusion_matrix = normalise(precision,recall,f1,confusion_matrix)
-    pruned_precision,pruned_recall,pruned_f1,confusion_matrix_pruned = normalise(pruned_precision,pruned_recall,pruned_f1,confusion_matrix_pruned)
-
-    print(f"PRE-PRUNE: Accuracy: {accuracy} \n Precision: {precision} \n Recall: {recall}\n F1: {f1} \n")
-    print(f"POST-PRUNE: Accuracy: {pruned_accuracy} \n Precision: {pruned_precision} \n Recall: {pruned_recall}\n F1: {pruned_f1}")
-    print(f"Confusion Matrix: \n{confusion_matrix}\n Pruned Confusion Matrix: \n{confusion_matrix_pruned}")
-     
-##Check if sample works
-##Check validation set

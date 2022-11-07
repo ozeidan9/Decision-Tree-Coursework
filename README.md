@@ -1,49 +1,16 @@
-# DecisionTreeCoursework
-Implement a decision tree algorithm and use it to determine one of the indoor locations based on WIFI signal strengths collected from a mobile phone.
+# Decision Tree Coursework Usage
+The decision tree algorithm is demonstrated in the Jupyter notebook file 'Main.ipynb' - there is a written description of all cells. Run all of them to generate the tree on the clean dataset.
 
+The 'src' folder contains all helper functions, and the 'test' folder contains the dataset.
 
-Grading scheme
+The Juypter notebook demonstrates the following:
 
-Final Grade = Report content + Code quality + Report quality
+1. The decision tree is generated based on the given dataset. The datasets are located in 'test' subdirectory and can be changed by changing the  filepath given to the 'data' paramater in the notebook in section 'Loading a Specified Dataset'.
 
-• Code (total : 20)
+2. The dataset is then split and then evaluated using 10-fold cross validation. The trees are also pruned during this stage.
 
-  – Results on secret test dataset: 10 
+3. As the trees are being generated, the tree visualiser saves images of the pre-pruned and post-pruned trees in the 'tree' subdictory, but also displays a pair in the notebook itself.
 
-  Make sure that your code runs. If not, you will lose most of the code mark
+4. The final performance metrics are printed after the trees are done generating.
 
-  – Presentation of the code (comments, indentation, structure): 5
-
-  – README instructions: 5
-
-• Report content (total : 70)
-
-  – Output of the tree visualisation function: BONUS 5 – Step 3 - Evaluation
-
-  ∗ Cross validation classification metrics (total 15) · Confusion matrix: 10
-
-  · The accuracy: 1
-
-  · The recall and precision per class: 2
-
-  · The F1-measures: 2
-
-  ∗ Result analysis (5 lines max): 10
-
-  ∗ Dataset differences (5 lines max): 10
-
-  – Step 4 - Pruning (and evaluation again)
-
-  ∗ Cross validation classification metrics after pruning (total 15)
-
-  · Confusion matrix: 10
-
-  · The accuracy: 1
-
-  · The recall and precision per class: 2 · The F1-measures: 2
-
-  ∗ Result analysis after pruning (5 lines max): 10 ∗ Depth analysis (5 lines max): 10
-
-• Report quality (total : 10)
-
-  – Quality of presentation: 10 
+5. At the end, there is a section of code that allows a datapoint to be evaluated on the pruned tree.
