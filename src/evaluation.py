@@ -88,14 +88,9 @@ def get_metrics(rooms_actual,true_positives,false_positives):
     recall = {1:0,2:0,3:0,4:0}
     f1 ={1:0,2:0,3:0,4:0}
     for room in range(1,5):
-        if rooms_actual[room] == 0:
-            continue
-        f1Denom = precision[room]+recall[room]
-        if f1Denom == 0:
-            continue
         precision[room] = true_positives[room]/(true_positives[room]+false_positives[room])
         recall[room] = true_positives[room]/rooms_actual[room]
-        f1[room] = (2*precision[room]*recall[room])/f1Denom
+        f1[room] = (2*precision[room]*recall[room])/precision[room]+recall[room]
 
     return ((precision,recall,f1))  
 
